@@ -1,9 +1,6 @@
-// API URL : https://api.quran.gadingdev/surah/{id}
+// API URL : https://api.quran.gadingdev/surah/{surah}
 // Example: https://api.quran.gadingdev/surah/1
 // Get all details per surah in the Al-Qur'an
-// To parse this JSON data, do
-//
-//     final surahDetail = surahDetailFromJson(jsonString);
 
 import 'dart:convert';
 
