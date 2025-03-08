@@ -1,4 +1,4 @@
-import 'package:alquran_app/app/routes/app_pages.dart';
+import 'package:alquran_app/app/constants/color.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -21,7 +21,7 @@ class IntroductionView extends GetView<IntroductionController> {
               style: GoogleFonts.poppins(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: Color(0xff672CBC),
+                color: Get.isDarkMode ? Colors.white : primaryColorLight,
               ),
             ),
             SizedBox(height: 20),
@@ -31,21 +31,38 @@ class IntroductionView extends GetView<IntroductionController> {
                 "Sempatkan membaca Al-Qur'an walaupun hanya satu ayat",
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  color: Color(0xff8789A3),
+                  fontSize: 16,
+                  color: secondaryColorLight,
                 ),
               ),
             ),
-            SizedBox(height: 20),
-            Container(
-              width: 300,
-              height: 300,
-              child: LottieBuilder.asset('assets/lotties/quran-animation.json'),
+            SizedBox(height: 40),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                width: 300,
+                height: 300,
+                child: LottieBuilder.asset(
+                  'assets/lotties/quran-animation.json',
+                ),
+              ),
             ),
             SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: () => Get.offAllNamed(Routes.HOME),
-              child: Text("Get Started"),
+            Container(
+              width: 160,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () => Get.offAllNamed('/home'),
+                style: ElevatedButton.styleFrom(backgroundColor: orangeColor),
+                child: Text(
+                  "Get Started",
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
             ),
           ],
         ),
