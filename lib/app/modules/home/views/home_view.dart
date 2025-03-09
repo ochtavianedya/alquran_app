@@ -1,7 +1,6 @@
 import 'package:alquran_app/app/constants/color.dart';
-import 'package:alquran_app/app/constants/theme.dart';
+import 'package:alquran_app/app/data/models/juz.dart' as juz;
 import 'package:alquran_app/app/data/models/surah.dart';
-import 'package:alquran_app/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -151,47 +150,8 @@ class HomeView extends GetView<HomeController> {
               Expanded(
                 child: TabBarView(
                   children: [
-                    AllSurah(controller: controller),
-                    ListView.builder(
-                      itemCount: 30,
-                      itemBuilder: (BuildContext context, int index) {
-                        return ListTile(
-                          onTap: () {},
-                          leading: Container(
-                            width: 45,
-                            height: 45,
-                            decoration: BoxDecoration(
-                              image: DecorationImage(
-                                image: AssetImage(
-                                  'assets/images/list_light.png',
-                                ),
-                              ),
-                            ),
-                            child: Center(
-                              child: Text(
-                                "${index + 1}",
-                                style: GoogleFonts.poppins(fontSize: 14),
-                              ),
-                            ),
-                          ),
-                          title: Text(
-                            "Juz ${index + 1}",
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          subtitle: Text(
-                            "Al-Fatihah Ayat 1-7",
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              color: secondaryColorLight,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                    ListSurah(controller: controller),
+                    ListJuz(controller: controller),
                     Center(child: Text("Bookmark")),
                   ],
                 ),
@@ -204,8 +164,94 @@ class HomeView extends GetView<HomeController> {
   }
 }
 
-class AllSurah extends StatelessWidget {
-  const AllSurah({super.key, required this.controller});
+class ListJuz extends StatelessWidget {
+  const ListJuz({super.key, required this.controller});
+
+  final HomeController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<juz.Juz>>(
+      future: controller.getAllJuz(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(color: primaryColorLight),
+          );
+        }
+        if (!snapshot.hasData) {
+          return const Center(child: Text("Tidak ada data"));
+        }
+        return ListView.separated(
+          itemCount: snapshot.data!.length,
+          physics: const ScrollPhysics(),
+          itemBuilder: (BuildContext context, int index) {
+            juz.Juz detailJuz = snapshot.data![index];
+            return ListTile(
+              onTap: () {},
+              leading: Obx(
+                () => Container(
+                  width: 45,
+                  height: 45,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage(
+                        controller.isDark.isTrue
+                            ? 'assets/images/list_dark.png'
+                            : 'assets/images/list_light.png',
+                      ),
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      "${index + 1}",
+                      style: GoogleFonts.poppins(fontSize: 14),
+                    ),
+                  ),
+                ),
+              ),
+              title: Text(
+                "Juz ${index + 1}",
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "Mulai dari ${detailJuz.juzStartInfo}",
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: secondaryColorLight,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    "Sampai ${detailJuz.juzEndInfo}",
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: secondaryColorLight,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+          separatorBuilder: (context, index) {
+            return Divider();
+          },
+        );
+      },
+    );
+  }
+}
+
+class ListSurah extends StatelessWidget {
+  const ListSurah({super.key, required this.controller});
 
   final HomeController controller;
 
