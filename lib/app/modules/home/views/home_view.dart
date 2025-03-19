@@ -187,8 +187,40 @@ class ListJuz extends StatelessWidget {
           physics: const ScrollPhysics(),
           itemBuilder: (BuildContext context, int index) {
             juz.Juz detailJuz = snapshot.data![index];
+
+            String startSurah = detailJuz.juzStartInfo.split(" - ").first;
+            String endSurah = detailJuz.juzEndInfo.split(" - ").first;
+
+            String startAyat = detailJuz.juzStartInfo.split(" - ").last;
+            String endAyat = detailJuz.juzEndInfo.split(" - ").last;
+
+            List<Surah> rawAllSurahInJuz = [];
+            List<Surah> allSurahInJuz = [];
+
+            for (Surah item in controller.allSurah) {
+              rawAllSurahInJuz.add(item);
+              if (item.name.transliteration.id == endSurah) {
+                break;
+              }
+            }
+
+            for (Surah item in rawAllSurahInJuz.reversed.toList()) {
+              allSurahInJuz.add(item);
+              if (item.name.transliteration.id == startSurah) {
+                break;
+              }
+            }
+
             return ListTile(
-              onTap: () {},
+              onTap: () {
+                Get.toNamed(
+                  '/juz-detail',
+                  arguments: {
+                    "juz": detailJuz,
+                    "surah": allSurahInJuz.reversed.toList(),
+                  },
+                );
+              },
               leading: Obx(
                 () => Container(
                   width: 45,
@@ -222,7 +254,7 @@ class ListJuz extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    "Mulai dari ${detailJuz.juzStartInfo}",
+                    "Mulai dari $startSurah ayat $startAyat",
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       color: secondaryColorLight,
@@ -230,7 +262,7 @@ class ListJuz extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    "Sampai ${detailJuz.juzEndInfo}",
+                    "Sampai $endSurah ayat $endAyat",
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       color: secondaryColorLight,

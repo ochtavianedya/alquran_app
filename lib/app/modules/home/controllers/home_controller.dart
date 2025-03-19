@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
 class HomeController extends GetxController {
+  List<Surah> allSurah = [];
   RxBool isDark = false.obs;
 
   void toggleTheme() {
@@ -23,7 +24,8 @@ class HomeController extends GetxController {
     if (data == null || data.isEmpty) {
       return [];
     } else {
-      return data.map((e) => Surah.fromJson(e)).toList();
+      allSurah = data.map((e) => Surah.fromJson(e)).toList();
+      return allSurah;
     }
   }
 

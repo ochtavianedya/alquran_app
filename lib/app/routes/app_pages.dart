@@ -4,6 +4,8 @@ import '../modules/home/bindings/home_binding.dart';
 import '../modules/home/views/home_view.dart';
 import '../modules/introduction/bindings/introduction_binding.dart';
 import '../modules/introduction/views/introduction_view.dart';
+import '../modules/juz_detail/bindings/juz_detail_binding.dart';
+import '../modules/juz_detail/views/juz_detail_view.dart';
 import '../modules/surah_detail/bindings/surah_detail_binding.dart';
 import '../modules/surah_detail/views/surah_detail_view.dart';
 
@@ -29,6 +31,11 @@ class AppPages {
       name: _Paths.SURAH_DETAIL,
       page: () => SurahDetailView(),
       binding: SurahDetailBinding(),
+    ),
+    GetPage(
+      name: _Paths.JUZ_DETAIL,
+      page: () => JuzDetailView(),
+      binding: JuzDetailBinding(),
     ),
   ];
 }
