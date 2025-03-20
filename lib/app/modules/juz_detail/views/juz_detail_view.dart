@@ -1,22 +1,20 @@
 import 'package:alquran_app/app/constants/color.dart';
-import 'package:alquran_app/app/data/models/juz.dart' as juz;
-import 'package:alquran_app/app/data/models/surah.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'package:alquran_app/app/data/models/surah_detail.dart' as detail;
 import '../controllers/juz_detail_controller.dart';
 
 class JuzDetailView extends GetView<JuzDetailController> {
-  final juz.Juz detailJuz = Get.arguments["juz"];
-  final List<Surah> allSurahInThisJuz = Get.arguments["surah"];
+  final Map<String, dynamic> dataMapPerJuz = Get.arguments;
   JuzDetailView({super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Juz ${detailJuz.juz}"),
+        title: Text("Juz ${dataMapPerJuz['juz']}"),
         actions: [
           IconButton(
             onPressed: () {
@@ -32,20 +30,94 @@ class JuzDetailView extends GetView<JuzDetailController> {
         ],
       ),
       body: ListView.builder(
-        itemCount: detailJuz.verses.length,
+        padding: const EdgeInsets.all(20.0),
+        itemCount: (dataMapPerJuz['verses'] as List).length,
         itemBuilder: (BuildContext context, int index) {
-          if (detailJuz.verses.isEmpty) {
+          if ((dataMapPerJuz['verses'] as List).isEmpty) {
             return Center(child: Text("Tidak ada data"));
           }
-          juz.Verse ayat = detailJuz.verses[index];
-          if (index != 0) {
-            if (ayat.number.inSurah == 1) {
-              controller.index++;
-            }
-          }
+
+          Map<String, dynamic> ayat = dataMapPerJuz['verses'][index];
+
+          detail.SurahDetail surah = ayat['surah'];
+
           return Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
+              if ((ayat['ayat'] as detail.Verse).number.inSurah == 1)
+                GestureDetector(
+                  onTap:
+                      () => Get.dialog(
+                        Dialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.all(25),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  "Tafsir ${surah.name.transliteration.id}",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                Text(
+                                  surah.tafsir.id,
+                                  style: GoogleFonts.poppins(fontSize: 14),
+                                  textAlign: TextAlign.left,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                  child: Container(
+                    width: Get.width,
+                    margin: const EdgeInsets.only(bottom: 20),
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [primaryColorLight, primaryColorDark],
+                      ),
+                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          Text(
+                            surah.name.transliteration.id,
+                            style: GoogleFonts.poppins(
+                              fontSize: 26,
+                              color: Colors.white,
+                            ),
+                          ),
+                          Text(
+                            "( ${surah.name.translation.id} )",
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            "${surah.revelation.id} | ${surah.numberOfVerses} Ayat",
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
@@ -78,16 +150,13 @@ class JuzDetailView extends GetView<JuzDetailController> {
                               ),
                               child: Center(
                                 child: Text(
-                                  "${ayat.number.inSurah}",
+                                  "${(ayat['ayat'] as detail.Verse).number.inSurah}",
                                   style: GoogleFonts.poppins(fontSize: 14),
                                 ),
                               ),
                             ),
                             Text(
-                              allSurahInThisJuz[controller.index]
-                                  .name
-                                  .transliteration
-                                  .id,
+                              surah.name.transliteration.id,
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 fontStyle: FontStyle.italic,
@@ -124,7 +193,7 @@ class JuzDetailView extends GetView<JuzDetailController> {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 5),
                 child: Text(
-                  ayat.text.arab,
+                  ((ayat['ayat'] as detail.Verse).text.arab),
                   textAlign: TextAlign.end,
                   style: GoogleFonts.amiri(
                     fontSize: 20,
@@ -141,7 +210,7 @@ class JuzDetailView extends GetView<JuzDetailController> {
                 child: Container(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    ayat.translation.id,
+                    ((ayat['ayat'] as detail.Verse).translation.id),
                     style: GoogleFonts.poppins(fontSize: 14),
                   ),
                 ),

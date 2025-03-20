@@ -1,11 +1,11 @@
 import 'package:alquran_app/app/constants/color.dart';
-import 'package:alquran_app/app/data/models/juz.dart' as juz;
 import 'package:alquran_app/app/data/models/surah.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'package:alquran_app/app/data/models/surah_detail.dart' as detail;
 import '../controllers/home_controller.dart';
 
 class HomeView extends GetView<HomeController> {
@@ -171,7 +171,7 @@ class ListJuz extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<juz.Juz>>(
+    return FutureBuilder<List<Map<String, dynamic>>>(
       future: controller.getAllJuz(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -186,40 +186,10 @@ class ListJuz extends StatelessWidget {
           itemCount: snapshot.data!.length,
           physics: const ScrollPhysics(),
           itemBuilder: (BuildContext context, int index) {
-            juz.Juz detailJuz = snapshot.data![index];
-
-            String startSurah = detailJuz.juzStartInfo.split(" - ").first;
-            String endSurah = detailJuz.juzEndInfo.split(" - ").first;
-
-            String startAyat = detailJuz.juzStartInfo.split(" - ").last;
-            String endAyat = detailJuz.juzEndInfo.split(" - ").last;
-
-            List<Surah> rawAllSurahInJuz = [];
-            List<Surah> allSurahInJuz = [];
-
-            for (Surah item in controller.allSurah) {
-              rawAllSurahInJuz.add(item);
-              if (item.name.transliteration.id == endSurah) {
-                break;
-              }
-            }
-
-            for (Surah item in rawAllSurahInJuz.reversed.toList()) {
-              allSurahInJuz.add(item);
-              if (item.name.transliteration.id == startSurah) {
-                break;
-              }
-            }
-
+            Map<String, dynamic> dataMapPerJuz = snapshot.data![index];
             return ListTile(
               onTap: () {
-                Get.toNamed(
-                  '/juz-detail',
-                  arguments: {
-                    "juz": detailJuz,
-                    "surah": allSurahInJuz.reversed.toList(),
-                  },
-                );
+                Get.toNamed('/juz-detail', arguments: dataMapPerJuz);
               },
               leading: Obx(
                 () => Container(
@@ -254,7 +224,7 @@ class ListJuz extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    "Mulai dari $startSurah ayat $startAyat",
+                    "Mulai dari ${(dataMapPerJuz['start']['surah'] as detail.SurahDetail).name.transliteration.id} ayat ${(dataMapPerJuz['start']['ayat'] as detail.Verse).number.inSurah}",
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       color: secondaryColorLight,
@@ -262,7 +232,7 @@ class ListJuz extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    "Sampai $endSurah ayat $endAyat",
+                    "Sampai ${(dataMapPerJuz['end']['surah'] as detail.SurahDetail).name.transliteration.id} ayat ${(dataMapPerJuz['end']['ayat'] as detail.Verse).number.inSurah}",
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       color: secondaryColorLight,

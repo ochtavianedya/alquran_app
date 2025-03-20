@@ -1,8 +1,9 @@
 import 'dart:convert';
 
 import 'package:alquran_app/app/constants/theme.dart';
-import 'package:alquran_app/app/data/models/juz.dart';
+// import 'package:alquran_app/app/data/models/juz.dart';
 import 'package:alquran_app/app/data/models/surah.dart';
+import 'package:alquran_app/app/data/models/surah_detail.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
@@ -29,18 +30,42 @@ class HomeController extends GetxController {
     }
   }
 
-  Future<List<Juz>> getAllJuz() async {
-    List<Juz> allJuz = [];
-    for (int i = 1; i <= 30; i++) {
-      Uri url = Uri.parse('https://api.quran.gading.dev/juz/$i');
-      var res = await http.get(url);
+  Future<List<Map<String, dynamic>>> getAllJuz() async {
+    int juz = 1;
 
-      Map<String, dynamic> data =
-          (json.decode(res.body) as Map<String, dynamic>)['data'];
+    List<Map<String, dynamic>> verseHolder = [];
+    List<Map<String, dynamic>> allJuz = [];
 
-      Juz juz = Juz.fromJson(data);
-      allJuz.add(juz);
+    for (var i = 1; i <= 114; i++) {
+      var res = await http.get(
+        Uri.parse('https://api.quran.gading.dev/surah/$i'),
+      );
+      Map<String, dynamic> rawData = json.decode(res.body)['data'];
+      SurahDetail data = SurahDetail.fromJson(rawData);
+      for (var ayat in data.verses) {
+        if (ayat.meta.juz == juz) {
+          verseHolder.add({"surah": data, "ayat": ayat});
+        } else {
+          allJuz.add({
+            "juz": juz,
+            "start": verseHolder[0],
+            "end": verseHolder[verseHolder.length - 1],
+            "verses": verseHolder,
+          });
+          juz++;
+          verseHolder = [];
+          verseHolder.add({"surah": data, "ayat": ayat});
+        }
+      }
     }
+
+    allJuz.add({
+      "juz": juz,
+      "start": verseHolder[0],
+      "end": verseHolder[verseHolder.length - 1],
+      "verses": verseHolder,
+    });
+
     return allJuz;
   }
 }
