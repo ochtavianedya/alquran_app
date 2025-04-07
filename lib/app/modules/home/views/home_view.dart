@@ -6,6 +6,8 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:alquran_app/app/data/models/surah_detail.dart' as detail;
+import 'package:alquran_app/app/shared/widgets/custom_app_bar.dart';
+import 'package:alquran_app/app/shared/controller/theme_controller.dart';
 import '../controllers/home_controller.dart';
 
 class HomeView extends GetView<HomeController> {
@@ -13,24 +15,7 @@ class HomeView extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Al-Qur\'an App'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              Get.find<HomeController>().toggleTheme();
-            },
-            icon: Obx(
-              () =>
-                  Get.find<HomeController>().isDark.value
-                      ? Icon(Icons.light_mode_outlined)
-                      : Icon(Icons.dark_mode_outlined),
-            ),
-          ),
-          IconButton(onPressed: () {}, icon: Icon(Icons.search)),
-        ],
-      ),
-
+      appBar: CustomAppBar(title: "Al-Qur'an"),
       body: DefaultTabController(
         length: 3,
         child: Padding(
@@ -44,6 +29,14 @@ class HomeView extends GetView<HomeController> {
                   fontSize: 18,
                   color: secondaryColorDark,
                   fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                "Ochtavian Edya",
+                style: GoogleFonts.poppins(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               Container(
@@ -160,6 +153,37 @@ class HomeView extends GetView<HomeController> {
           ),
         ),
       ),
+      bottomNavigationBar: Obx(
+        () => BottomNavigationBar(
+          currentIndex: controller.selectedNavIndex.value,
+          onTap: (index) => controller.selectedNavIndex.value = index,
+          selectedItemColor: primaryColorLight,
+          unselectedItemColor: secondaryColorLight,
+          type: BottomNavigationBarType.fixed,
+          selectedLabelStyle: GoogleFonts.poppins(
+            fontWeight: FontWeight.w500,
+            fontSize: 12,
+          ),
+          unselectedLabelStyle: GoogleFonts.poppins(fontSize: 12),
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_outlined),
+              activeIcon: Icon(Icons.home),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.search_outlined),
+              activeIcon: Icon(Icons.search),
+              label: 'Search',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.bookmark_outline),
+              activeIcon: Icon(Icons.bookmark),
+              label: 'Bookmark',
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -198,7 +222,7 @@ class ListJuz extends StatelessWidget {
                   decoration: BoxDecoration(
                     image: DecorationImage(
                       image: AssetImage(
-                        controller.isDark.isTrue
+                        ThemeController.to.isDarkMode
                             ? 'assets/images/list_dark.png'
                             : 'assets/images/list_light.png',
                       ),
@@ -286,7 +310,7 @@ class ListSurah extends StatelessWidget {
                   decoration: BoxDecoration(
                     image: DecorationImage(
                       image: AssetImage(
-                        controller.isDark.isTrue
+                        ThemeController.to.isDarkMode
                             ? 'assets/images/list_dark.png'
                             : 'assets/images/list_light.png',
                       ),

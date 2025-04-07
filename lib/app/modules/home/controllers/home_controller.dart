@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:alquran_app/app/constants/theme.dart';
+// import 'package:alquran_app/app/constants/theme.dart';
 // import 'package:alquran_app/app/data/models/juz.dart';
 import 'package:alquran_app/app/data/models/surah.dart';
 import 'package:alquran_app/app/data/models/surah_detail.dart';
@@ -9,12 +9,7 @@ import 'package:http/http.dart' as http;
 
 class HomeController extends GetxController {
   List<Surah> allSurah = [];
-  RxBool isDark = false.obs;
-
-  void toggleTheme() {
-    isDark.value = !isDark.value;
-    Get.changeTheme(isDark.value ? appDark : appLight);
-  }
+  final selectedNavIndex = 0.obs;
 
   Future<List<Surah>> getAllSurah() async {
     Uri url = Uri.parse('https://api.quran.gading.dev/surah');
