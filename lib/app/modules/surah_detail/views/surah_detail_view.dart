@@ -1,6 +1,8 @@
 import 'package:alquran_app/app/constants/color.dart';
 import 'package:alquran_app/app/data/models/surah.dart';
 import 'package:alquran_app/app/data/models/surah_detail.dart' as surah_detail;
+import 'package:alquran_app/app/shared/controller/theme_controller.dart';
+import 'package:alquran_app/app/shared/widgets/custom_app_bar.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -15,22 +17,7 @@ class SurahDetailView extends GetView<SurahDetailController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Surah ${surah.name.transliteration.id}"),
-        actions: [
-          IconButton(
-            onPressed: () {
-              Get.find<SurahDetailController>().toggleTheme();
-            },
-            icon: Obx(
-              () =>
-                  Get.find<SurahDetailController>().isDark.value
-                      ? Icon(Icons.light_mode_outlined)
-                      : Icon(Icons.dark_mode_outlined),
-            ),
-          ),
-        ],
-      ),
+      appBar: CustomAppBar(title: "Surah ${surah.name.transliteration.id}"),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -148,7 +135,7 @@ class SurahDetailView extends GetView<SurahDetailController> {
                                   decoration: BoxDecoration(
                                     image: DecorationImage(
                                       image: AssetImage(
-                                        controller.isDark.isTrue
+                                        ThemeController.to.isDarkMode
                                             ? 'assets/images/list_dark.png'
                                             : 'assets/images/list_light.png',
                                       ),

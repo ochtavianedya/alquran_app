@@ -1,4 +1,6 @@
 import 'package:alquran_app/app/constants/color.dart';
+import 'package:alquran_app/app/shared/controller/theme_controller.dart';
+import 'package:alquran_app/app/shared/widgets/custom_app_bar.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -13,22 +15,7 @@ class JuzDetailView extends GetView<JuzDetailController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Juz ${dataMapPerJuz['juz']}"),
-        actions: [
-          IconButton(
-            onPressed: () {
-              Get.find<JuzDetailController>().toggleTheme();
-            },
-            icon: Obx(
-              () =>
-                  Get.find<JuzDetailController>().isDark.value
-                      ? Icon(Icons.light_mode_outlined)
-                      : Icon(Icons.dark_mode_outlined),
-            ),
-          ),
-        ],
-      ),
+      appBar: CustomAppBar(title: "Juz ${dataMapPerJuz['juz']}"),
       body: ListView.builder(
         padding: const EdgeInsets.all(20.0),
         itemCount: (dataMapPerJuz['verses'] as List).length,
@@ -142,7 +129,7 @@ class JuzDetailView extends GetView<JuzDetailController> {
                               decoration: BoxDecoration(
                                 image: DecorationImage(
                                   image: AssetImage(
-                                    controller.isDark.isTrue
+                                    ThemeController.to.isDarkMode
                                         ? 'assets/images/list_dark.png'
                                         : 'assets/images/list_light.png',
                                   ),

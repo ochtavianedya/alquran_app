@@ -1,4 +1,5 @@
 import 'package:alquran_app/app/constants/color.dart';
+import 'package:alquran_app/app/shared/controller/theme_controller.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -21,7 +22,10 @@ class IntroductionView extends GetView<IntroductionController> {
               style: GoogleFonts.poppins(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: Get.isDarkMode ? Colors.white : primaryColorLight,
+                color: ThemeController.to.getThemeColor(
+                  Colors.white,
+                  primaryColorLight,
+                ),
               ),
             ),
             SizedBox(height: 20),
