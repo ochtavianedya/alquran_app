@@ -17,7 +17,7 @@ class HomeView extends GetView<HomeController> {
     return Scaffold(
       appBar: CustomAppBar(title: "Al-Qur'an"),
       body: DefaultTabController(
-        length: 3,
+        length: 2,
         child: Padding(
           padding: const EdgeInsets.only(top: 20, right: 20, left: 20),
           child: Column(
@@ -137,15 +137,13 @@ class HomeView extends GetView<HomeController> {
                 tabs: [
                   Tab(text: "Surah"),
                   Tab(text: "Juz"),
-                  Tab(text: "Bookmark"),
                 ],
               ),
               Expanded(
                 child: TabBarView(
                   children: [
-                    ListSurah(controller: controller),
-                    ListJuz(controller: controller),
-                    Center(child: Text("Bookmark")),
+                    SurahList(controller: controller),
+                    JuzList(controller: controller),
                   ],
                 ),
               ),
@@ -188,8 +186,8 @@ class HomeView extends GetView<HomeController> {
   }
 }
 
-class ListJuz extends StatelessWidget {
-  const ListJuz({super.key, required this.controller});
+class JuzList extends StatelessWidget {
+  const JuzList({super.key, required this.controller});
 
   final HomeController controller;
 
@@ -276,8 +274,8 @@ class ListJuz extends StatelessWidget {
   }
 }
 
-class ListSurah extends StatelessWidget {
-  const ListSurah({super.key, required this.controller});
+class SurahList extends StatelessWidget {
+  const SurahList({super.key, required this.controller});
 
   final HomeController controller;
 
@@ -344,7 +342,10 @@ class ListSurah extends StatelessWidget {
                 style: GoogleFonts.amiri(
                   fontWeight: FontWeight.bold,
                   fontSize: 20,
-                  color: Get.isDarkMode ? primaryColorDark : primaryColorLight,
+                  color:
+                      ThemeController.to.isDarkMode
+                          ? primaryColorDark
+                          : primaryColorLight,
                 ),
               ),
             );
