@@ -149,25 +149,71 @@ class SurahDetailView extends GetView<SurahDetailController> {
                                   ),
                                 ),
                               ),
-                              Row(
-                                children: [
-                                  IconButton(
-                                    onPressed: () {},
-                                    icon: const Icon(
-                                      Icons.play_arrow,
-                                      size: 24.0,
-                                      color: purpleColor,
+                              GetBuilder<SurahDetailController>(
+                                builder:
+                                    (c) => Row(
+                                      children: [
+                                        // If this verse is not playing
+                                        (c.currentAyatIndex.value != index)
+                                            ? IconButton(
+                                              onPressed: () {
+                                                c.playAyat(
+                                                  ayat.audio.primary,
+                                                  index,
+                                                );
+                                              },
+                                              icon: const Icon(
+                                                Icons.play_arrow,
+                                                size: 24.0,
+                                                color: purpleColor,
+                                              ),
+                                            )
+                                            : Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                (c.audioState.value == "play")
+                                                    ? IconButton(
+                                                      onPressed: () {
+                                                        c.pauseAyat();
+                                                      },
+                                                      icon: const Icon(
+                                                        Icons.pause,
+                                                        size: 24.0,
+                                                        color: purpleColor,
+                                                      ),
+                                                    )
+                                                    : IconButton(
+                                                      onPressed: () {
+                                                        c.resumeAyat();
+                                                      },
+                                                      icon: const Icon(
+                                                        Icons.play_arrow,
+                                                        size: 24.0,
+                                                        color: purpleColor,
+                                                      ),
+                                                    ),
+                                                IconButton(
+                                                  onPressed: () {
+                                                    c.stopAyat();
+                                                  },
+                                                  icon: const Icon(
+                                                    Icons.stop,
+                                                    size: 24.0,
+                                                    color: purpleColor,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                        IconButton(
+                                          onPressed: () {},
+                                          icon: const Icon(
+                                            Icons.bookmark_border_outlined,
+                                            size: 24.0,
+                                            color: purpleColor,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                  IconButton(
-                                    onPressed: () {},
-                                    icon: const Icon(
-                                      Icons.bookmark_border_outlined,
-                                      size: 24.0,
-                                      color: purpleColor,
-                                    ),
-                                  ),
-                                ],
                               ),
                             ],
                           ),
