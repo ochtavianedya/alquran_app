@@ -36,7 +36,7 @@ class JuzDetailView extends GetView<JuzDetailController> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  if ((ayat['ayat'] as detail.Verse).number.inSurah == 1)
+                  if (verse.number.inSurah == 1)
                     GestureDetector(
                       onTap:
                           () => Get.dialog(
@@ -142,7 +142,7 @@ class JuzDetailView extends GetView<JuzDetailController> {
                                   ),
                                   child: Center(
                                     child: Text(
-                                      "${(ayat['ayat'] as detail.Verse).number.inSurah}",
+                                      "${verse.number.inSurah}",
                                       style: GoogleFonts.poppins(fontSize: 14),
                                     ),
                                   ),
@@ -231,7 +231,7 @@ class JuzDetailView extends GetView<JuzDetailController> {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 5),
                     child: Text(
-                      ((ayat['ayat'] as detail.Verse).text.arab),
+                      verse.text.arab,
                       textAlign: TextAlign.end,
                       style: GoogleFonts.amiri(
                         fontSize: 20,
@@ -248,7 +248,7 @@ class JuzDetailView extends GetView<JuzDetailController> {
                     child: Container(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        ((ayat['ayat'] as detail.Verse).translation.id),
+                        verse.translation.id,
                         style: GoogleFonts.poppins(fontSize: 14),
                       ),
                     ),
