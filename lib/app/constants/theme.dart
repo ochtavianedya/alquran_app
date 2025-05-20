@@ -20,6 +20,10 @@ ThemeData appLight = ThemeData(
     labelColor: primaryColorLight,
     indicatorColor: primaryColorLight,
   ),
+  dialogTheme: DialogTheme(backgroundColor: Colors.white),
+  bottomNavigationBarTheme: BottomNavigationBarThemeData(
+    backgroundColor: Colors.white,
+  ),
 );
 
 ThemeData appDark = ThemeData(
@@ -39,5 +43,9 @@ ThemeData appDark = ThemeData(
   tabBarTheme: TabBarTheme(
     labelColor: Colors.white,
     indicatorColor: primaryColorDark,
+  ),
+  dialogTheme: DialogTheme(backgroundColor: primaryBgColorDark),
+  bottomNavigationBarTheme: BottomNavigationBarThemeData(
+    backgroundColor: Color(0xff121931),
   ),
 );
