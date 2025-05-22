@@ -2,14 +2,54 @@ import 'dart:convert';
 
 // import 'package:alquran_app/app/constants/theme.dart';
 // import 'package:alquran_app/app/data/models/juz.dart';
+import 'package:alquran_app/app/data/db/bookmark.dart';
 import 'package:alquran_app/app/data/models/surah.dart';
 import 'package:alquran_app/app/data/models/surah_detail.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:sqflite/sqflite.dart';
 
 class HomeController extends GetxController {
   List<Surah> allSurah = [];
   final selectedNavIndex = 0.obs;
+
+  // List of titles for each tab
+  final List<String> tabTitles = [
+    "Al-Qur'an", // Home tab
+    "Prayer Time", // Prayer Time tab
+    "Bookmark", // Bookmark tab
+  ];
+
+  // Getter to get current title based on selected index
+  String get currentTitle => tabTitles[selectedNavIndex.value];
+
+  DatabaseManager database = DatabaseManager.instance;
+  // get all bookmark
+  Future<List<Map<String, dynamic>>> getBookmark() async {
+    Database db = await database.db;
+    List<Map<String, dynamic>> allBookmarks = await db.query(
+      "bookmark",
+      where: "last_read = 0",
+    );
+    return allBookmarks;
+  }
+
+  // delete bookmark
+  void deleteBookmark(int id) async {
+    Database db = await database.db;
+    await db.delete("bookmark", where: "id = $id");
+    update();
+
+    Get.snackbar(
+      "Sukses",
+      "Bookmark telah dihapus",
+      backgroundColor: Colors.green,
+      colorText: Colors.white,
+      borderRadius: 16,
+      icon: const Icon(Icons.check_circle, color: Colors.white),
+    );
+  }
 
   Future<List<Surah>> getAllSurah() async {
     Uri url = Uri.parse('https://api.quran.gading.dev/surah');

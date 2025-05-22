@@ -205,9 +205,73 @@ class SurahDetailView extends GetView<SurahDetailController> {
                                               ],
                                             ),
                                         IconButton(
-                                          onPressed: () {},
+                                          onPressed: () {
+                                            Get.defaultDialog(
+                                              title: "Bookmark",
+                                              titleStyle: GoogleFonts.poppins(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              middleText:
+                                                  "Pilih jenis bookmark",
+                                              actions: [
+                                                ElevatedButton(
+                                                  onPressed: () {
+                                                    c.addBookmark(
+                                                      true,
+                                                      snapshot.data!,
+                                                      ayat,
+                                                      index,
+                                                    );
+                                                  },
+                                                  child: Text(
+                                                    "Last Read",
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        primaryColorLight,
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            12,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                ElevatedButton(
+                                                  onPressed: () {
+                                                    c.addBookmark(
+                                                      false,
+                                                      snapshot.data!,
+                                                      ayat,
+                                                      index,
+                                                    );
+                                                  },
+                                                  child: Text(
+                                                    "Bookmark",
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        primaryColorLight,
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            12,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            );
+                                          },
                                           icon: const Icon(
-                                            Icons.bookmark_border_outlined,
+                                            Icons.bookmark_add_outlined,
                                             size: 24.0,
                                             color: purpleColor,
                                           ),
