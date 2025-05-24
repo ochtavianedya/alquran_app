@@ -1,7 +1,5 @@
 import 'dart:convert';
 
-// import 'package:alquran_app/app/constants/theme.dart';
-// import 'package:alquran_app/app/data/models/juz.dart';
 import 'package:alquran_app/app/data/db/bookmark.dart';
 import 'package:alquran_app/app/data/models/surah.dart';
 import 'package:alquran_app/app/data/models/surah_detail.dart';
@@ -12,7 +10,12 @@ import 'package:sqflite/sqflite.dart';
 
 class HomeController extends GetxController {
   List<Surah> allSurah = [];
+  List<Map<String, dynamic>> allJuz = [];
   final selectedNavIndex = 0.obs;
+  RxBool allJuzDataLoaded = false.obs;
+
+  // Add reactive list for bookmarks
+  RxList<Map<String, dynamic>> bookmarkList = <Map<String, dynamic>>[].obs;
 
   // List of titles for each tab
   final List<String> tabTitles = [
@@ -25,12 +28,32 @@ class HomeController extends GetxController {
   String get currentTitle => tabTitles[selectedNavIndex.value];
 
   DatabaseManager database = DatabaseManager.instance;
+
+  @override
+  void onInit() {
+    super.onInit();
+    // Load bookmarks when controller initializes
+    loadBookmarks();
+  }
+
+  // Method to load bookmarks and update reactive list
+  Future<void> loadBookmarks() async {
+    try {
+      List<Map<String, dynamic>> bookmarks = await getBookmark();
+      bookmarkList.value = bookmarks;
+    } catch (e) {
+      // print('Error loading bookmarks: $e');
+      bookmarkList.value = [];
+    }
+  }
+
   // get all bookmark
   Future<List<Map<String, dynamic>>> getBookmark() async {
     Database db = await database.db;
     List<Map<String, dynamic>> allBookmarks = await db.query(
       "bookmark",
       where: "last_read = 0",
+      orderBy: "juz, via, surah, ayat",
     );
     return allBookmarks;
   }
@@ -39,8 +62,12 @@ class HomeController extends GetxController {
   void deleteBookmark(int id) async {
     Database db = await database.db;
     await db.delete("bookmark", where: "id = $id");
-    update();
 
+    // Refresh bookmark list after deletion
+    await loadBookmarks();
+
+    update();
+    Get.back();
     Get.snackbar(
       "Sukses",
       "Bookmark telah dihapus",
@@ -49,6 +76,21 @@ class HomeController extends GetxController {
       borderRadius: 16,
       icon: const Icon(Icons.check_circle, color: Colors.white),
     );
+  }
+
+  // get last read
+  Future<Map<String, dynamic>?> getLastRead() async {
+    Database db = await database.db;
+    List<Map<String, dynamic>> lastReadData = await db.query(
+      "bookmark",
+      where: "last_read = 1",
+    );
+
+    if (lastReadData.isNotEmpty) {
+      return lastReadData[0];
+    } else {
+      return null;
+    }
   }
 
   Future<List<Surah>> getAllSurah() async {
@@ -69,7 +111,6 @@ class HomeController extends GetxController {
     int juz = 1;
 
     List<Map<String, dynamic>> verseHolder = [];
-    List<Map<String, dynamic>> allJuz = [];
 
     for (var i = 1; i <= 114; i++) {
       var res = await http.get(
@@ -100,6 +141,10 @@ class HomeController extends GetxController {
       "end": verseHolder[verseHolder.length - 1],
       "verses": verseHolder,
     });
+
+    // Set allJuzDataLoaded to true and refresh bookmarks
+    allJuzDataLoaded.value = true;
+    await loadBookmarks(); // Refresh bookmarks after allJuz is loaded
 
     return allJuz;
   }

@@ -3,9 +3,15 @@ import 'package:alquran_app/app/data/models/surah_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:sqflite/sqflite.dart';
 
+// Import home controller to refresh bookmarks
+import '../../home/controllers/home_controller.dart';
+
 class JuzDetailController extends GetxController {
+  AutoScrollController scrollC = AutoScrollController();
+
   int index = 0;
   final player = AudioPlayer();
   final audioState = "stop".obs;
@@ -13,7 +19,7 @@ class JuzDetailController extends GetxController {
 
   DatabaseManager database = DatabaseManager.instance;
 
-  void addBookmark(
+  Future<void> addBookmark(
     bool lastRead,
     SurahDetail surah,
     Verse ayat,
@@ -28,9 +34,17 @@ class JuzDetailController extends GetxController {
     } else {
       List checkData = await db.query(
         "bookmark",
-        columns: ["surah", "ayat", "juz", "via", "index_ayat", "last_read"],
+        columns: [
+          "surah",
+          "surah_number",
+          "ayat",
+          "juz",
+          "via",
+          "index_ayat",
+          "last_read",
+        ],
         where:
-            "surah = '${surah.name.transliteration.id.replaceAll("'", "+")}' and ayat = ${ayat.number.inSurah} and juz = ${ayat.meta.juz} and via = 'juz' and index_ayat = $indexAyat and last_read = 0",
+            "surah = '${surah.name.transliteration.id.replaceAll("'", "+")}' and surah_number = ${surah.number} and ayat = ${ayat.number.inSurah} and juz = ${ayat.meta.juz} and via = 'juz' and index_ayat = $indexAyat and last_read = 0",
       );
       if (checkData.isNotEmpty) {
         flagExist = true;
@@ -40,12 +54,21 @@ class JuzDetailController extends GetxController {
     if (flagExist == false) {
       await db.insert("bookmark", {
         "surah": surah.name.transliteration.id.replaceAll("'", "+"),
+        "surah_number": surah.number,
         "ayat": ayat.number.inSurah,
         "juz": ayat.meta.juz,
         "via": "juz",
         "index_ayat": indexAyat,
         "last_read": lastRead == true ? 1 : 0,
       });
+
+      // Refresh bookmarks in HomeController after adding bookmark
+      try {
+        final homeController = Get.find<HomeController>();
+        await homeController.loadBookmarks();
+      } catch (e) {
+        // print('HomeController not found: $e');
+      }
 
       Get.back();
       Get.snackbar(

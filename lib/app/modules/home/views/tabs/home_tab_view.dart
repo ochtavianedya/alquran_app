@@ -11,9 +11,7 @@ import '../../controllers/home_controller.dart';
 
 class HomeTabView extends StatelessWidget {
   final HomeController controller;
-
   const HomeTabView({super.key, required this.controller});
-
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -42,89 +40,255 @@ class HomeTabView extends StatelessWidget {
             ),
 
             // Last read card
-            Container(
-              margin: EdgeInsets.symmetric(vertical: 20),
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(20)),
-                gradient: LinearGradient(
-                  colors: [primaryColorDark, primaryColorLight],
-                ),
-              ),
-              child: Material(
-                color: Colors.transparent,
-                borderRadius: BorderRadius.all(Radius.circular(20)),
-                child: InkWell(
-                  onTap: () {},
-                  borderRadius: BorderRadius.all(Radius.circular(20)),
-                  child: Container(
-                    height: 150,
-                    width: Get.width,
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [primaryColorLight, primaryColorDark],
-                      ),
-                      borderRadius: BorderRadius.all(Radius.circular(20)),
-                    ),
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          bottom: -50,
-                          right: 0,
-                          child: Opacity(
-                            opacity: 0.5,
-                            child: Container(
-                              width: 170,
-                              height: 170,
-                              child: Image.asset(
-                                'assets/images/quran.png',
-                                fit: BoxFit.contain,
-                              ),
+            GetBuilder<HomeController>(
+              builder:
+                  (c) => FutureBuilder<Map<String, dynamic>?>(
+                    future: c.getLastRead(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Container(
+                          margin: EdgeInsets.symmetric(vertical: 20),
+                          height: 150,
+                          width: Get.width,
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [primaryColorLight, primaryColorDark],
                             ),
+                            borderRadius: BorderRadius.all(Radius.circular(20)),
+                          ),
+                          child: Stack(
+                            children: [
+                              Positioned(
+                                bottom: -50,
+                                right: 0,
+                                child: Opacity(
+                                  opacity: 0.5,
+                                  child: Container(
+                                    width: 170,
+                                    height: 170,
+                                    child: Image.asset(
+                                      'assets/images/quran.png',
+                                      fit: BoxFit.contain,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(20),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.menu_book_rounded,
+                                          size: 24,
+                                          color: Colors.white,
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Text(
+                                          "Terakhir dibaca",
+                                          style: GoogleFonts.poppins(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 30),
+                                    Text(
+                                      "Loading...",
+                                      style: GoogleFonts.poppins(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    Text(
+                                      "",
+                                      style: GoogleFonts.poppins(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+
+                      Map<String, dynamic>? lastRead = snapshot.data;
+
+                      return Container(
+                        margin: EdgeInsets.symmetric(vertical: 20),
+                        decoration: const BoxDecoration(
+                          borderRadius: BorderRadius.all(Radius.circular(20)),
+                          gradient: LinearGradient(
+                            colors: [primaryColorDark, primaryColorLight],
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.menu_book_rounded,
-                                    size: 24,
-                                    color: Colors.white,
+                        child: Material(
+                          color: Colors.transparent,
+                          borderRadius: BorderRadius.all(Radius.circular(20)),
+                          child: InkWell(
+                            onLongPress: () {
+                              if (lastRead != null) {
+                                Get.defaultDialog(
+                                  title: "Hapus Last Read",
+                                  titleStyle: GoogleFonts.poppins(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                  const SizedBox(width: 10),
-                                  Text(
-                                    "Terakhir dibaca",
-                                    style: GoogleFonts.poppins(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w500,
+                                  middleText: "Apakah anda yakin?",
+                                  actions: [
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        c.deleteBookmark(lastRead['id']);
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.red,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        "Hapus",
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                    OutlinedButton(
+                                      onPressed: () {
+                                        Get.back();
+                                      },
+                                      style: OutlinedButton.styleFrom(
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Text("Batal"),
+                                    ),
+                                  ],
+                                );
+                              }
+                            },
+                            onTap: () {
+                              if (lastRead != null) {
+                                switch (lastRead["via"]) {
+                                  case "juz":
+                                    Map<String, dynamic> dataMapPerJuz =
+                                        controller.allJuz[lastRead["juz"] - 1];
+                                    Get.toNamed(
+                                      '/juz-detail',
+                                      arguments: {
+                                        "juz": dataMapPerJuz,
+                                        "bookmark": lastRead,
+                                      },
+                                    );
+                                    break;
+                                  default:
+                                    Get.toNamed(
+                                      '/surah-detail',
+                                      arguments: {
+                                        "name": lastRead["surah"]
+                                            .toString()
+                                            .replaceAll("+", "'"),
+                                        "number": lastRead["surah_number"],
+                                        "bookmark": lastRead,
+                                      },
+                                    );
+                                    break;
+                                }
+                              }
+                            },
+                            borderRadius: BorderRadius.all(Radius.circular(20)),
+                            child: Container(
+                              height: 150,
+                              width: Get.width,
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [primaryColorLight, primaryColorDark],
+                                ),
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(20),
+                                ),
+                              ),
+                              child: Stack(
+                                children: [
+                                  Positioned(
+                                    bottom: -50,
+                                    right: 0,
+                                    child: Opacity(
+                                      opacity: 0.5,
+                                      child: Container(
+                                        width: 170,
+                                        height: 170,
+                                        child: Image.asset(
+                                          'assets/images/quran.png',
+                                          fit: BoxFit.contain,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(20),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            const Icon(
+                                              Icons.menu_book_rounded,
+                                              size: 24,
+                                              color: Colors.white,
+                                            ),
+                                            const SizedBox(width: 10),
+                                            Text(
+                                              "Terakhir dibaca",
+                                              style: GoogleFonts.poppins(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 30),
+                                        Text(
+                                          lastRead == null
+                                              ? ""
+                                              : lastRead['surah']
+                                                  .toString()
+                                                  .replaceAll("+", "'"),
+                                          style: GoogleFonts.poppins(
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        Text(
+                                          lastRead == null
+                                              ? "Belum ada data"
+                                              : "Juz ${lastRead['juz']} | Ayat ${lastRead['ayat']}",
+                                          style: GoogleFonts.poppins(
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 30),
-                              Text(
-                                "Al-Fatihah",
-                                style: GoogleFonts.poppins(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              Text(
-                                "Ayat Ke: 7 | Juz 1",
-                                style: GoogleFonts.poppins(color: Colors.white),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
-                ),
-              ),
             ),
 
             // Tabs bar
@@ -167,13 +331,17 @@ class JuzList extends StatelessWidget {
       future: controller.getAllJuz(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
+          controller.allJuzDataLoaded.value = false;
           return const Center(
             child: CircularProgressIndicator(color: primaryColorLight),
           );
         }
+
         if (!snapshot.hasData) {
           return const Center(child: Text("Tidak ada data"));
         }
+
+        controller.allJuzDataLoaded.value = true;
         return ListView.separated(
           itemCount: snapshot.data!.length,
           physics: const ScrollPhysics(),
@@ -181,7 +349,7 @@ class JuzList extends StatelessWidget {
             Map<String, dynamic> dataMapPerJuz = snapshot.data![index];
             return ListTile(
               onTap: () {
-                Get.toNamed('/juz-detail', arguments: dataMapPerJuz);
+                Get.toNamed('/juz-detail', arguments: {"juz": dataMapPerJuz});
               },
               leading: Obx(
                 () => Container(
@@ -269,7 +437,13 @@ class SurahList extends StatelessWidget {
             Surah surah = snapshot.data![index];
             return ListTile(
               onTap: () {
-                Get.toNamed('/surah-detail', arguments: surah);
+                Get.toNamed(
+                  '/surah-detail',
+                  arguments: {
+                    "name": surah.name.transliteration.id,
+                    "number": surah.number,
+                  },
+                );
               },
               leading: Obx(
                 () => Container(

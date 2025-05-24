@@ -6,16 +6,19 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
+import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:sqflite/sqflite.dart';
 
 class SurahDetailController extends GetxController {
+  AutoScrollController scrollC = AutoScrollController();
+  
   final player = AudioPlayer();
   final audioState = "stop".obs;
   RxInt currentAyatIndex = (-1).obs;
 
   DatabaseManager database = DatabaseManager.instance;
 
-  void addBookmark(
+  Future<void> addBookmark(
     bool lastRead,
     SurahDetail surah,
     Verse ayat,
@@ -30,9 +33,17 @@ class SurahDetailController extends GetxController {
     } else {
       List checkData = await db.query(
         "bookmark",
-        columns: ["surah", "ayat", "juz", "via", "index_ayat", "last_read"],
+        columns: [
+          "surah",
+          "surah_number",
+          "ayat",
+          "juz",
+          "via",
+          "index_ayat",
+          "last_read",
+        ],
         where:
-            "surah = '${surah.name.transliteration.id.replaceAll("'", "+")}' and ayat = ${ayat.number.inSurah} and juz = ${ayat.meta.juz} and via = 'surah' and index_ayat = $indexAyat and last_read = 0",
+            "surah = '${surah.name.transliteration.id.replaceAll("'", "+")}' and surah_number = ${surah.number} and ayat = ${ayat.number.inSurah} and juz = ${ayat.meta.juz} and via = 'surah' and index_ayat = $indexAyat and last_read = 0",
       );
       if (checkData.isNotEmpty) {
         flagExist = true;
@@ -42,6 +53,7 @@ class SurahDetailController extends GetxController {
     if (flagExist == false) {
       await db.insert("bookmark", {
         "surah": surah.name.transliteration.id.replaceAll("'", "+"),
+        "surah_number": surah.number,
         "ayat": ayat.number.inSurah,
         "juz": ayat.meta.juz,
         "via": "surah",
