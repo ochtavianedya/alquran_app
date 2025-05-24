@@ -12,7 +12,6 @@ class DatabaseManager {
 
   Future<Database> get db async {
     _db ??= await _initDB();
-
     return _db!;
   }
 
@@ -27,6 +26,7 @@ class DatabaseManager {
           CREATE TABLE bookmark (
             id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
             surah TEXT NOT NULL,
+            surah_number INTEGER NOT NULL,
             ayat INTEGER NOT NULL,
             juz INTEGER NOT NULL,
             via TEXT NOT NULL,
