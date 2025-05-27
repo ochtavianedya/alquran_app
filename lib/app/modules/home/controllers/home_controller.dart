@@ -17,6 +17,11 @@ class HomeController extends GetxController {
   // Add reactive list for bookmarks
   RxList<Map<String, dynamic>> bookmarkList = <Map<String, dynamic>>[].obs;
 
+  // Search functionality
+  final TextEditingController searchController = TextEditingController();
+  RxString searchQuery = ''.obs;
+  RxList<Surah> filteredSurah = <Surah>[].obs;
+
   // List of titles for each tab
   final List<String> tabTitles = [
     "Al-Qur'an", // Home tab
@@ -34,6 +39,45 @@ class HomeController extends GetxController {
     super.onInit();
     // Load bookmarks when controller initializes
     loadBookmarks();
+    // Initialize search listener
+    searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void onClose() {
+    searchController.removeListener(_onSearchChanged);
+    searchController.dispose();
+    super.onClose();
+  }
+
+  // Search functionality
+  void _onSearchChanged() {
+    searchQuery.value = searchController.text.toLowerCase();
+    _filterData();
+  }
+
+  void _filterData() {
+    if (searchQuery.value.isEmpty) {
+      filteredSurah.value = allSurah;
+    } else {
+      // Filter Surah
+      filteredSurah.value =
+          allSurah.where((surah) {
+            return surah.name.transliteration.id.toLowerCase().contains(
+                  searchQuery.value,
+                ) ||
+                surah.name.translation.id.toLowerCase().contains(
+                  searchQuery.value,
+                ) ||
+                surah.number.toString().contains(searchQuery.value);
+          }).toList();
+    }
+  }
+
+  void clearSearch() {
+    searchController.clear();
+    searchQuery.value = '';
+    _filterData();
   }
 
   // Method to load bookmarks and update reactive list
@@ -103,6 +147,7 @@ class HomeController extends GetxController {
       return [];
     } else {
       allSurah = data.map((e) => Surah.fromJson(e)).toList();
+      filteredSurah.value = allSurah; // Initialize filtered list
       return allSurah;
     }
   }

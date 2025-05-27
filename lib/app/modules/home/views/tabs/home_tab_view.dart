@@ -39,6 +39,52 @@ class HomeTabView extends StatelessWidget {
               ),
             ),
 
+            const SizedBox(height: 20),
+
+            // Search bar
+            Container(
+              child: Obx(
+                () => TextField(
+                  controller: controller.searchController,
+                  decoration: InputDecoration(
+                    hintText: 'Cari Surah...',
+                    hintStyle: GoogleFonts.poppins(
+                      color: secondaryColorLight,
+                      fontSize: 14,
+                    ),
+                    prefixIcon: const Icon(
+                      Icons.search,
+                      color: secondaryColorLight,
+                    ),
+                    suffixIcon:
+                        controller.searchQuery.value.isNotEmpty
+                            ? IconButton(
+                              icon: const Icon(
+                                Icons.clear,
+                                color: secondaryColorLight,
+                              ),
+                              onPressed: controller.clearSearch,
+                            )
+                            : null,
+                    filled: true,
+                    fillColor:
+                        ThemeController.to.isDarkMode
+                            ? Colors.grey[800]
+                            : Colors.grey[100],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                  ),
+                  style: GoogleFonts.poppins(fontSize: 14),
+                ),
+              ),
+            ),
+
             // Last read card
             GetBuilder<HomeController>(
               builder:
@@ -342,6 +388,7 @@ class JuzList extends StatelessWidget {
         }
 
         controller.allJuzDataLoaded.value = true;
+
         return ListView.separated(
           itemCount: snapshot.data!.length,
           physics: const ScrollPhysics(),
@@ -430,74 +477,101 @@ class SurahList extends StatelessWidget {
         if (!snapshot.hasData) {
           return const Center(child: Text("Tidak ada data"));
         }
-        return ListView.separated(
-          itemCount: snapshot.data!.length,
-          physics: const ScrollPhysics(),
-          itemBuilder: (BuildContext context, int index) {
-            Surah surah = snapshot.data![index];
-            return ListTile(
-              onTap: () {
-                Get.toNamed(
-                  '/surah-detail',
-                  arguments: {
-                    "name": surah.name.transliteration.id,
-                    "number": surah.number,
-                  },
-                );
-              },
-              leading: Obx(
-                () => Container(
-                  width: 45,
-                  height: 45,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage(
-                        ThemeController.to.isDarkMode
-                            ? 'assets/images/list_dark.png'
-                            : 'assets/images/list_light.png',
+
+        return Obx(() {
+          List<Surah> dataToShow =
+              controller.searchQuery.value.isEmpty
+                  ? snapshot.data!
+                  : controller.filteredSurah;
+
+          if (dataToShow.isEmpty && controller.searchQuery.value.isNotEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.search_off, size: 64, color: secondaryColorLight),
+                  const SizedBox(height: 16),
+                  Text(
+                    "Surah tidak ditemukan",
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      color: secondaryColorLight,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return ListView.separated(
+            itemCount: dataToShow.length,
+            physics: const ScrollPhysics(),
+            itemBuilder: (BuildContext context, int index) {
+              Surah surah = dataToShow[index];
+              return ListTile(
+                onTap: () {
+                  Get.toNamed(
+                    '/surah-detail',
+                    arguments: {
+                      "name": surah.name.transliteration.id,
+                      "number": surah.number,
+                    },
+                  );
+                },
+                leading: Obx(
+                  () => Container(
+                    width: 45,
+                    height: 45,
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage(
+                          ThemeController.to.isDarkMode
+                              ? 'assets/images/list_dark.png'
+                              : 'assets/images/list_light.png',
+                        ),
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        "${surah.number}",
+                        style: GoogleFonts.poppins(fontSize: 14),
                       ),
                     ),
                   ),
-                  child: Center(
-                    child: Text(
-                      "${surah.number}",
-                      style: GoogleFonts.poppins(fontSize: 14),
-                    ),
+                ),
+                title: Text(
+                  surah.name.transliteration.id,
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-              ),
-              title: Text(
-                surah.name.transliteration.id,
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
+                subtitle: Text(
+                  "${surah.revelation.id} | ${surah.numberOfVerses} Ayat",
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: secondaryColorLight,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
-              subtitle: Text(
-                "${surah.revelation.id} | ${surah.numberOfVerses} Ayat",
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  color: secondaryColorLight,
-                  fontWeight: FontWeight.w500,
+                trailing: Text(
+                  surah.name.short,
+                  style: GoogleFonts.amiri(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color:
+                        ThemeController.to.isDarkMode
+                            ? primaryColorDark
+                            : primaryColorLight,
+                  ),
                 ),
-              ),
-              trailing: Text(
-                surah.name.short,
-                style: GoogleFonts.amiri(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                  color:
-                      ThemeController.to.isDarkMode
-                          ? primaryColorDark
-                          : primaryColorLight,
-                ),
-              ),
-            );
-          },
-          separatorBuilder: (context, index) {
-            return Divider();
-          },
-        );
+              );
+            },
+            separatorBuilder: (context, index) {
+              return Divider();
+            },
+          );
+        });
       },
     );
   }
