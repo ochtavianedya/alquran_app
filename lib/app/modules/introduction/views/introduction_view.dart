@@ -43,7 +43,7 @@ class IntroductionView extends GetView<IntroductionController> {
             SizedBox(height: 40),
             ClipRRect(
               borderRadius: BorderRadius.circular(20),
-              child: Container(
+              child: SizedBox(
                 width: 300,
                 height: 300,
                 child: LottieBuilder.asset(
@@ -52,7 +52,7 @@ class IntroductionView extends GetView<IntroductionController> {
               ),
             ),
             SizedBox(height: 30),
-            Container(
+            SizedBox(
               width: 160,
               height: 50,
               child: ElevatedButton(

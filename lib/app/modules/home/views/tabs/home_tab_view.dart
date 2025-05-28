@@ -42,46 +42,44 @@ class HomeTabView extends StatelessWidget {
             const SizedBox(height: 20),
 
             // Search bar
-            Container(
-              child: Obx(
-                () => TextField(
-                  controller: controller.searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Cari Surah...',
-                    hintStyle: GoogleFonts.poppins(
-                      color: secondaryColorLight,
-                      fontSize: 14,
-                    ),
-                    prefixIcon: const Icon(
-                      Icons.search,
-                      color: secondaryColorLight,
-                    ),
-                    suffixIcon:
-                        controller.searchQuery.value.isNotEmpty
-                            ? IconButton(
-                              icon: const Icon(
-                                Icons.clear,
-                                color: secondaryColorLight,
-                              ),
-                              onPressed: controller.clearSearch,
-                            )
-                            : null,
-                    filled: true,
-                    fillColor:
-                        ThemeController.to.isDarkMode
-                            ? Colors.grey[800]
-                            : Colors.grey[100],
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
+            Obx(
+              () => TextField(
+                controller: controller.searchController,
+                decoration: InputDecoration(
+                  hintText: 'Cari Surah...',
+                  hintStyle: GoogleFonts.poppins(
+                    color: secondaryColorLight,
+                    fontSize: 14,
                   ),
-                  style: GoogleFonts.poppins(fontSize: 14),
+                  prefixIcon: const Icon(
+                    Icons.search,
+                    color: secondaryColorLight,
+                  ),
+                  suffixIcon:
+                      controller.searchQuery.value.isNotEmpty
+                          ? IconButton(
+                            icon: const Icon(
+                              Icons.clear,
+                              color: secondaryColorLight,
+                            ),
+                            onPressed: controller.clearSearch,
+                          )
+                          : null,
+                  filled: true,
+                  fillColor:
+                      ThemeController.to.isDarkMode
+                          ? Color(0xff121931)
+                          : Colors.grey[100],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                 ),
+                style: GoogleFonts.poppins(fontSize: 14),
               ),
             ),
 
@@ -109,7 +107,7 @@ class HomeTabView extends StatelessWidget {
                                 right: 0,
                                 child: Opacity(
                                   opacity: 0.5,
-                                  child: Container(
+                                  child: SizedBox(
                                     width: 170,
                                     height: 170,
                                     child: Image.asset(
@@ -270,7 +268,7 @@ class HomeTabView extends StatelessWidget {
                                     right: 0,
                                     child: Opacity(
                                       opacity: 0.5,
-                                      child: Container(
+                                      child: SizedBox(
                                         width: 170,
                                         height: 170,
                                         child: Image.asset(
