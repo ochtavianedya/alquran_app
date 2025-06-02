@@ -324,7 +324,11 @@ class JuzDetailView extends GetView<JuzDetailController> {
 
     return Scaffold(
       appBar: CustomAppBar(title: "Juz ${dataMapPerJuz['juz']}"),
-      body: ListView(controller: controller.scrollC, children: listAyat),
+      body: ListView(
+        controller: controller.scrollC,
+        padding: const EdgeInsets.all(20),
+        children: listAyat,
+      ),
     );
   }
 }

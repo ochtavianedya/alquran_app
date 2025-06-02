@@ -46,7 +46,7 @@ class HomeTabView extends StatelessWidget {
               () => TextField(
                 controller: controller.searchController,
                 decoration: InputDecoration(
-                  hintText: 'Cari Surah...',
+                  hintText: 'Cari Surah atau Juz',
                   hintStyle: GoogleFonts.poppins(
                     color: secondaryColorLight,
                     fontSize: 14,
@@ -375,7 +375,6 @@ class JuzList extends StatelessWidget {
       future: controller.getAllJuz(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          controller.allJuzDataLoaded.value = false;
           return const Center(
             child: CircularProgressIndicator(color: primaryColorLight),
           );
@@ -385,73 +384,99 @@ class JuzList extends StatelessWidget {
           return const Center(child: Text("Tidak ada data"));
         }
 
-        controller.allJuzDataLoaded.value = true;
+        return Obx(() {
+          List<Map<String, dynamic>> dataToShow =
+              controller.searchQuery.value.isEmpty
+                  ? snapshot.data!
+                  : controller.filteredJuz;
 
-        return ListView.separated(
-          itemCount: snapshot.data!.length,
-          physics: const ScrollPhysics(),
-          itemBuilder: (BuildContext context, int index) {
-            Map<String, dynamic> dataMapPerJuz = snapshot.data![index];
-            return ListTile(
-              onTap: () {
-                Get.toNamed('/juz-detail', arguments: {"juz": dataMapPerJuz});
-              },
-              leading: Obx(
-                () => Container(
-                  width: 45,
-                  height: 45,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage(
-                        ThemeController.to.isDarkMode
-                            ? 'assets/images/list_dark.png'
-                            : 'assets/images/list_light.png',
-                      ),
-                    ),
-                  ),
-                  child: Center(
-                    child: Text(
-                      "${index + 1}",
-                      style: GoogleFonts.poppins(fontSize: 14),
-                    ),
-                  ),
-                ),
-              ),
-              title: Text(
-                "Juz ${index + 1}",
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
+          if (dataToShow.isEmpty && controller.searchQuery.value.isNotEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  Icon(Icons.search_off, size: 64, color: secondaryColorLight),
+                  const SizedBox(height: 16),
                   Text(
-                    "Mulai dari ${(dataMapPerJuz['start']['surah'] as detail.SurahDetail).name.transliteration.id} ayat ${(dataMapPerJuz['start']['ayat'] as detail.Verse).number.inSurah}",
+                    "Juz tidak ditemukan",
                     style: GoogleFonts.poppins(
-                      fontSize: 12,
+                      fontSize: 16,
                       color: secondaryColorLight,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  Text(
-                    "Sampai ${(dataMapPerJuz['end']['surah'] as detail.SurahDetail).name.transliteration.id} ayat ${(dataMapPerJuz['end']['ayat'] as detail.Verse).number.inSurah}",
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      color: secondaryColorLight,
-                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
               ),
             );
-          },
-          separatorBuilder: (context, index) {
-            return Divider();
-          },
-        );
+          }
+
+          return ListView.separated(
+            itemCount: dataToShow.length,
+            physics: const ScrollPhysics(),
+            itemBuilder: (BuildContext context, int index) {
+              Map<String, dynamic> dataMapPerJuz = dataToShow[index];
+              // Get actual juz number from the data
+              int juzNumber = dataMapPerJuz['juz'];
+              return ListTile(
+                onTap: () {
+                  Get.toNamed('/juz-detail', arguments: {"juz": dataMapPerJuz});
+                },
+                leading: Obx(
+                  () => Container(
+                    width: 45,
+                    height: 45,
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage(
+                          ThemeController.to.isDarkMode
+                              ? 'assets/images/list_dark.png'
+                              : 'assets/images/list_light.png',
+                        ),
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        "$juzNumber",
+                        style: GoogleFonts.poppins(fontSize: 14),
+                      ),
+                    ),
+                  ),
+                ),
+                title: Text(
+                  "Juz $juzNumber",
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "Mulai dari ${(dataMapPerJuz['start']['surah'] as detail.SurahDetail).name.transliteration.id} ayat ${(dataMapPerJuz['start']['ayat'] as detail.Verse).number.inSurah}",
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: secondaryColorLight,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Text(
+                      "Sampai ${(dataMapPerJuz['end']['surah'] as detail.SurahDetail).name.transliteration.id} ayat ${(dataMapPerJuz['end']['ayat'] as detail.Verse).number.inSurah}",
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: secondaryColorLight,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+            separatorBuilder: (context, index) {
+              return Divider();
+            },
+          );
+        });
       },
     );
   }

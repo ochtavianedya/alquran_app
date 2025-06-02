@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 
 import 'package:alquran_app/app/data/db/bookmark.dart';
@@ -21,6 +23,7 @@ class HomeController extends GetxController {
   final TextEditingController searchController = TextEditingController();
   RxString searchQuery = ''.obs;
   RxList<Surah> filteredSurah = <Surah>[].obs;
+  RxList<Map<String, dynamic>> filteredJuz = <Map<String, dynamic>>[].obs;
 
   // List of titles for each tab
   final List<String> tabTitles = [
@@ -59,17 +62,77 @@ class HomeController extends GetxController {
   void _filterData() {
     if (searchQuery.value.isEmpty) {
       filteredSurah.value = allSurah;
+      filteredJuz.value = allJuz;
     } else {
+      String query = searchQuery.value.toLowerCase();
+
       // Filter Surah
       filteredSurah.value =
           allSurah.where((surah) {
             return surah.name.transliteration.id.toLowerCase().contains(
                   searchQuery.value,
                 ) ||
-                surah.name.translation.id.toLowerCase().contains(
-                  searchQuery.value,
-                ) ||
                 surah.number.toString().contains(searchQuery.value);
+          }).toList();
+
+      //  Filter Juz
+      filteredJuz.value =
+          allJuz.where((juz) {
+            try {
+              String juzNumber = juz['juz'].toString();
+
+              // Safely access nested properties
+              String startSurah = '';
+              String endSurah = '';
+
+              // Check if start and end exist and have the expected structure
+              if (juz['start'] != null && juz['start']['surah'] != null) {
+                var startSurahData = juz['start']['surah'];
+                if (startSurahData is SurahDetail) {
+                  startSurah =
+                      startSurahData.name.transliteration.id.toLowerCase();
+                }
+              }
+
+              if (juz['end'] != null && juz['end']['surah'] != null) {
+                var endSurahData = juz['end']['surah'];
+                if (endSurahData is SurahDetail) {
+                  endSurah = endSurahData.name.transliteration.id.toLowerCase();
+                }
+              }
+
+              // Enhanced matching logic
+              bool matchesJuzNumber = juzNumber.contains(query);
+              bool matchesJuzText = "juz $juzNumber".contains(
+                query,
+              ); // "juz 1", "juz 15", etc.
+              bool matchesStartSurah = startSurah.contains(query);
+              bool matchesEndSurah = endSurah.contains(query);
+
+              // Special handling for "juz" keyword
+              bool matchesJuzKeyword = false;
+              if (query.startsWith('juz')) {
+                // Extract number after "juz "
+                String juzQuery = query.replaceFirst('juz', '').trim();
+                if (juzQuery.isEmpty) {
+                  // If just "juz", show all juz
+                  matchesJuzKeyword = true;
+                } else {
+                  // If "juz 1", "juz 15", etc.
+                  matchesJuzKeyword = juzNumber == juzQuery;
+                }
+              }
+
+              return matchesJuzNumber ||
+                  matchesJuzText ||
+                  matchesStartSurah ||
+                  matchesEndSurah ||
+                  matchesJuzKeyword;
+            } catch (e) {
+              // If there's any error accessing the properties, exclude this juz from results
+              print('Error filtering juz: $e');
+              return false;
+            }
           }).toList();
     }
   }
@@ -153,44 +216,131 @@ class HomeController extends GetxController {
   }
 
   Future<List<Map<String, dynamic>>> getAllJuz() async {
-    int juz = 1;
-
-    List<Map<String, dynamic>> verseHolder = [];
-
-    for (var i = 1; i <= 114; i++) {
-      var res = await http.get(
-        Uri.parse('https://api.quran.gading.dev/surah/$i'),
-      );
-      Map<String, dynamic> rawData = json.decode(res.body)['data'];
-      SurahDetail data = SurahDetail.fromJson(rawData);
-      for (var ayat in data.verses) {
-        if (ayat.meta.juz == juz) {
-          verseHolder.add({"surah": data, "ayat": ayat});
-        } else {
-          allJuz.add({
-            "juz": juz,
-            "start": verseHolder[0],
-            "end": verseHolder[verseHolder.length - 1],
-            "verses": verseHolder,
-          });
-          juz++;
-          verseHolder = [];
-          verseHolder.add({"surah": data, "ayat": ayat});
-        }
-      }
+    // Return cached data if already loaded
+    if (allJuzDataLoaded.value && allJuz.isNotEmpty) {
+      return allJuz;
     }
 
-    allJuz.add({
-      "juz": juz,
-      "start": verseHolder[0],
-      "end": verseHolder[verseHolder.length - 1],
-      "verses": verseHolder,
-    });
+    // Set loading state at the beginning
+    allJuzDataLoaded.value = false;
 
-    // Set allJuzDataLoaded to true and refresh bookmarks
-    allJuzDataLoaded.value = true;
-    await loadBookmarks(); // Refresh bookmarks after allJuz is loaded
+    try {
+      // Use a Map to group verses by Juz number
+      Map<int, List<Map<String, dynamic>>> juzMap = {};
 
-    return allJuz;
+      for (var i = 1; i <= 114; i++) {
+        try {
+          var res = await http
+              .get(Uri.parse('https://api.quran.gading.dev/surah/$i'))
+              .timeout(const Duration(seconds: 10));
+
+          if (res.statusCode != 200) {
+            print('Failed to fetch surah $i: ${res.statusCode}');
+            continue;
+          }
+
+          var responseBody = json.decode(res.body);
+          if (responseBody == null || responseBody['data'] == null) {
+            print('Invalid response for surah $i');
+            continue;
+          }
+
+          Map<String, dynamic> rawData = responseBody['data'];
+          SurahDetail data = SurahDetail.fromJson(rawData);
+
+          if (data.verses.isEmpty) {
+            print('No verses found for surah $i');
+            continue;
+          }
+
+          for (var ayat in data.verses) {
+            try {
+              // Multiple null checks and safe access
+              dynamic juzValue = ayat.meta.juz;
+              int? juzNumber;
+
+              if (juzValue != null) {
+                if (juzValue is int) {
+                  juzNumber = juzValue;
+                } else if (juzValue is String) {
+                  juzNumber = int.tryParse(juzValue);
+                } else {
+                  // Try to convert to string first, then parse
+                  juzNumber = int.tryParse(juzValue.toString());
+                }
+              }
+
+              // Skip if juz is null or invalid
+              if (juzNumber == null || juzNumber < 1 || juzNumber > 30) {
+                print(
+                  'Invalid juz number for surah $i, ayat ${ayat.number}: $juzValue',
+                );
+                continue;
+              }
+
+              // Initialize the list for this juz if it doesn't exist
+              if (!juzMap.containsKey(juzNumber)) {
+                juzMap[juzNumber] = [];
+              }
+
+              // Add the verse to the appropriate juz
+              juzMap[juzNumber]!.add({"surah": data, "ayat": ayat});
+            } catch (ayatError) {
+              print('Error processing ayat in surah $i: $ayatError');
+              continue; // Skip this ayat and continue with the next one
+            }
+
+            // Add small delay to avoid overwhelming the API
+            if (i % 10 == 0) {
+              await Future.delayed(Duration(milliseconds: 100));
+            }
+          }
+        } catch (surahError) {
+          print('Error processing surah $i: $surahError');
+          continue; // Skip this surah and continue with the next one
+        }
+      }
+
+      // Convert the map to the expected list format
+      allJuz.clear(); // Clear existing data
+
+      for (int juzNumber = 1; juzNumber <= 30; juzNumber++) {
+        if (juzMap.containsKey(juzNumber) && juzMap[juzNumber]!.isNotEmpty) {
+          List<Map<String, dynamic>> verses = juzMap[juzNumber]!;
+
+          allJuz.add({
+            "juz": juzNumber,
+            "start": verses.first,
+            "end": verses.last,
+            "verses": verses,
+          });
+        }
+      }
+
+      print('Successfully loaded ${allJuz.length} Juz parts');
+
+      // Set allJuzDataLoaded to true and refresh bookmarks
+      allJuzDataLoaded.value = true;
+      filteredJuz.value = allJuz; // Initialize filtered Juz list
+      await loadBookmarks(); // Refresh bookmarks after allJuz is loaded
+
+      return allJuz;
+    } catch (e, stackTrace) {
+      // Set loading state to false if there's an error
+      allJuzDataLoaded.value = false;
+
+      // Detailed error logging
+      print('Error in getAllJuz: $e');
+      print('Stack trace: $stackTrace');
+
+      Get.snackbar(
+        "Error",
+        "Failed to load Juz data. Please check your internet connection and try again.",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: Duration(seconds: 5),
+      );
+      return [];
+    }
   }
 }
