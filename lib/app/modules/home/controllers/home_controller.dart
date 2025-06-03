@@ -28,7 +28,7 @@ class HomeController extends GetxController {
   // List of titles for each tab
   final List<String> tabTitles = [
     "Al-Qur'an", // Home tab
-    "Prayer Time", // Prayer Time tab
+    "Waktu Sholat", // Prayer Time tab
     "Bookmark", // Bookmark tab
   ];
 
